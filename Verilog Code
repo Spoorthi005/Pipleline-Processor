@@ -1,0 +1,34 @@
+module pipeline_processor (
+    input clk, rst,
+    input [7:0] instruction,  // 8-bit instruction
+    output reg [7:0] result   // Output result
+);
+
+    reg [7:0] IF_ID, ID_EX, EX_WB;  // Pipeline registers
+    reg [7:0] regA, regB;  // Registers for 
+	 always @(posedge clk or posedge rst) begin
+        if (rst) begin
+            IF_ID <= 0; ID_EX <= 0; EX_WB <= 0;
+            regA <= 0; regB <= 0; result <= 0;
+        end else begin
+            // Stage 1: Instruction Fetch
+            IF_ID <= instruction;
+
+            // Stage 2: Instruction Decode
+            ID_EX <= IF_ID;
+				regA <= IF_ID[7:4];  // Example: Extract operand A
+            regB <= IF_ID[3:0];  // Extract operand B
+				$display("Instruction Decode:reg A: %b, regB: %b,instruction: %b", regA, regB,IF_ID);
+
+            // Stage 3: Execution
+            case (ID_EX[7:6])  // Check operation type
+                2'b00: EX_WB <= regA + regB;  // ADD
+                2'b01: EX_WB <= regA - regB;  // SUB
+                2'b10: EX_WB <= regB;         // LOAD
+                default: EX_WB <= 0;
+            endcase
+			   $display("Instruction: %b, regA: %b, regB: %b, EX_WB: %b",instruction,regA,regB,EX_WB,result);
+				result <= EX_WB;
+        end
+    end
+endmodule
